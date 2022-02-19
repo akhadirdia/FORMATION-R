@@ -1,0 +1,724 @@
+---
+title: "Statistique Descriptive"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Apprendre comment analyser une variable quantitative avec R
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library("questionr")
+library(knitr)
+tutorial_options(exercise.timelimit = 60)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+## Bienvenue
+
+### Outline
+
+Ce tutoriel vous permet d'utiliser R pour faire de la statistique descriptive.
+C'est pour vous si vous voulez savoir comment:
+
+-   Analyser une variable quantitative
+-   Analyser une variable qualitative avec R
+-   Faire une analyse bivariée avec R
+-   Faire la régression linéaire avec R
+-   Faire la régression logistique avec R
+
+## Analyse Univariée
+
+**Présentation des deux bases de données HDV2003 et RP2012**
+
+**HDV2003**
+
+Ce fichier (HDV2003) est issu de l'enquête Histoire de vie qui porte sur la construction des identités et a pour objectifs de décrire, de hiérarchiser, d'analyser les différents types de liens sociaux qui permettent aux individus de s'intégrer dans la société française du début du XXIème siècle.
+Le fichier original contient 808 variables et 8403 observations.
+Télécharger [le dictionnaire des données](https://www.insee.fr/fr/statistiques/fichier/2532244/hdv03fd_dictionnaire_des_codes.pdf).
+Cependant la base complète n'est pas disponible dans le package `questionr`, seulement quelques observations (2000) et quelques variables (20).
+
+```{r}
+data("hdv2003")
+head(hdv2003)
+```
+
+**RP2012**
+
+Échantillon du recensement national français de 2012.
+Il contient des résultats pour chaque ville française de plus de 2000 habitants, et un petit sous-ensemble de variables, à la fois en nombre et en proportion de population.
+Une base de données avec 5170 lignes et 60 variables.
+
+```{r}
+data("rp2012")
+head(rp2012)
+```
+
+### Analyse d'une Variable Quantitative {#analyse-dune-variable-quantitative}
+
+On parle de **variable quantitative** quand on a une variable de type numérique (un nombre) qui peut prendre un grand nombre de valeurs.
+
+`Maximum` et `Minimum`
+
+Pour analyser une variable quantitative, on peut d'abord voir comment la série est repartie quelle est la valeur minimale (fonction `min`), la valeur maximale (fonction `max`).
+
+Executez ce code suivant pour calculer le minimum et le maximum de la variable **age** de la base de donnée **hdv2003**
+
+```{r max, exercise = TRUE, exercise.eval = FALSE}
+##Maximum
+max(hdv2003$age)
+##Minimum
+min(hdv2003$age)
+```
+
+### `Moyenne` et `Mediane`
+
+On peut calculer aussi les indicateurs de centralité, c'est-à-dire autour de quelle valeur se repartissent les données.
+Ainsi, on peut calculer la moyenne (fonction `mean`), la médiane (fonction `median`).
+
+Executez ce code suivant pour calculer la moyenne et la médiane de la variable **age** de la base de donnée **hdv2003**
+
+```{r moyenne, exercise = TRUE, exercise.eval = FALSE}
+##Moyenne
+mean(hdv2003$age)
+##Mediane
+median(hdv2003$age)
+```
+
+### `Variance`, `Ecart-type` et `Etendue`
+
+Les indicateurs de dispersion sont aussi souvent utilisés pour caractériser une variable quantitative.
+On peut calculer l'écart-type (fonction `sd`) de la variable, la variance (fonction `var`) ou l'étendue (`max` -- `min`) pour voir si les données sont regroupées ou au contraire dispersées.
+
+Exécutez ce code pour calculer l'écart-type, la variance et l'étendue de la variable **age** de la base de donnée **hdv2003.**
+
+```{r var, exercise = TRUE, exercise.eval = FALSE}
+##Variance
+var(hdv2003$age)
+##Ecart-type
+sd(hdv2003$age)
+##Etendue
+max(hdv2003$age)-min(hdv2003$age)
+```
+
+### `Quartiles`
+
+Les quartiles (fonction `quantile`) aussi sont généralement utilisées pour mesurer la dispersion d'une série.
+
+-   Le premier quartile est la valeur pour laquelle on a 25% des observations en dessous et 75% au-dessus;
+
+-   Le deuxième quartile est la valeur pour laquelle on a 50% des observations en dessous et 50% au-dessus (c'est donc la médiane);
+
+-   Le troisième quartile est la valeur pour laquelle on a 75% des observations en dessous et 25% au-dessus.
+
+Exécutez ce code pour calculer le quartile d'ordre 25% et 75% de la variable **age** de la base de donnée **hdv2003**
+
+```{r quantille, exercise = TRUE, exercise.eval = FALSE}
+##Quartiles d'ordre 25%
+quantile(hdv2003$age, prob=0.25)
+##Quartile d'ordre 75%
+quantile(hdv2003$age, prob=0.75)
+```
+
+### La fonction `summary`
+
+La fonction `summary` permet d'avoir plusieurs indicateurs (min, max, quartiles et moyenne) en même temps.
+
+Exécutez ce code pour calculer la moyenne, le minimum, le maximum et les quartiles de la variable **age** de la base de donnée **hdv2003**
+
+```{r sum, exercise = TRUE, exercise.eval = FALSE}
+## Min, 1ere quartile, Mediane, Moyenne, 3eme quartile et maximum
+summary(hdv2003$age)
+```
+
+#### Représentation graphique d'une variable quantitative
+
+Pour étudier aussi la distribution d'une variable quantitative, on peut faire une représentation graphique :
+
+-   Un histogramme **(hist)**
+
+-   Une boite à moustache **(boxplot)**
+
+La fonction `hist`a plusieurs arguments qui permettent de personnaliser le graphique :
+
+**Breaks** : le nombre de classe,
+
+**Main :** le titre du graphique
+
+**xlab** : axe des abscisses
+
+**ylab** : axe des ordonnées
+
+**col** : couleur.
+
+Ce document <http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf> donne beaucoup d'informations sur les couleurs intégrées dans R.
+
+Construisons l'histogramme de la variable nombre d'heures passés devant a télé par jour.
+
+```{r hist, exercise = TRUE, exercise.eval = FALSE}
+hist(hdv2003$heures.tv, main = "Nombre d'heures passées devant la télé par jou
+r", xlab = "Heures", ylab = "Effectif", col="blue",breaks=10)
+
+```
+
+La fonction `boxplot` est utilisée pour représenter la boite à moustache.
+Elle est souvent utilisée pour voir la dispersion des données (valeurs aberrantes).
+Elle est aussi utilisée pour comparer les distributions de plusieurs variables ou d'une même variable entre différents groupes.
+
+```{r boxplot, exercise = TRUE, exercise.eval = FALSE}
+##BOITE A MOUSTACHE
+boxplot(hdv2003$heures.tv, main = "Nombre d'heures passées devant la télé par j
+our", ylab = "Heures")
+
+```
+
+Pour une interprétation plus détaillée de la boite à moustache, veuillez consulter ce document <http://pbil.univ-lyon1.fr/R/pdf/lang04.pdf>
+
+### Vidéo récapitulative
+
+![](https://youtu.be/lmy4szEXfSw)
+
+#### Tester vos connaissances
+
+```{r quiz3, echo=FALSE}
+quiz(caption = "Quiz - Analyse d'une variable quantitative",
+     
+     question("Quelle est la fonction de R qui permet de calculer la moyenne?",
+              answer("mean", correct = TRUE, message = "La fonction mean permet de calculer la moyenne. On peut aussi utiliser la fonction summary."),
+              answer("median")
+     ),
+     question("Quelle est la fonction R qui permet de calculer la mediane?",
+              answer("table"),
+              answer("mediane"),
+              answer("median", correct= TRUE, message= "La fonction median permet de calculer la  mediane. On peut aussi utiliser la fonction summary."),
+              allow_retry = TRUE
+     )
+)
+```
+
+```{r quiz1, echo = FALSE}
+question("Quelles sont les fonctions qui permettent de calculer les indicateurs de dispersion?:",
+         answer("table"),
+         answer("sd", correct=TRUE),
+         answer("freq"),
+         answer("var", correct = TRUE),
+         incorrect = "Incorrect: Les bonnes reponses sont: var et sd"
+)
+```
+
+#### Exercices
+
+1.  On souhaite étudier la répartition du temps passé devant la télévision par les enquêtés (variable **heures.tv** de la base **hdv2003**). Pour cela, affichez les principaux indicateurs de cette variable : valeur minimale, maximale, étendue, moyenne, médiane et écart-type. Représentez ensuite sa distribution par un histogramme en 10 classes.
+
+Utilisez ce code pour importer la base: `data("hdv2003")`.
+
+```{r meanex1, exercise = TRUE}
+    
+```
+
+### Analyse d'une variable qualitative
+
+Une **variable qualitative** est une variable qui ne peut prendre qu'un nombre limité de valeurs, appelées modalités.
+Par exemple la variable `sexe` avec deux modalités: 1.
+Masculin, 2.
+Féminin est une variable qualitative.
+
+Le **mode** est la modalité qui a le plus grand effectif.
+
+Pour étudier une variable qualitative, on fait généralement un tri à plat (fonction `table`) c'est-à-dire la répartition de la variable suivant ses modalités.
+
+Faisons le tri à plat de la variable **qualif** (qualification) dans la base de données **hdv2003**
+
+```{r table}
+data("hdv2003")
+## Tri à plat de la variable qualif
+table(hdv2003$qualif)
+
+```
+
+On a 6 modalités et le mode est la modalité `Employé`, il a la plus grande valeur (594).
+
+On peut stocker le résultat de `table` dans un objet et utiliser l'objet dans la suite si on veut ordonner par exemple les données.
+Faisons le tri à plat de la variable qualification et ordonner ensuite les valeurs.
+
+```{r table2}
+## Tri à plat de la variable qualif
+table(hdv2003$qualif)
+tabQualif<-table(hdv2003$qualif)
+sort(tabQualif)
+```
+
+Il faut noter que par défaut la fonction **table** n'affiche pas les valeurs manquantes.
+Pour les afficher il faut utiliser l'argument `useNA = "always".`
+
+Par exemple:
+
+```{r}
+table (hdv2003$sexe, useNA= "always")
+```
+
+La fonction `table` ne donne que les effectifs et parfois il est plus pertinent de travailler avec les proportions.
+On peut utiliser la fonction `prop.table` pour calculer ces proportions.
+
+```{r}
+prop.table(table(hdv2003$qualif))*100
+```
+
+On peut utiliser la fonction `round` pour diminuer le nombre de chiffres après la virgule comme suit:
+
+```{r}
+round(prop.table(table(hdv2003$qualif))*100, 2)
+```
+
+Il existe une fonction `freq` du package `questionr` qui permet de faire du tri à plat
+
+```{r}
+freq(hdv2003$nivetud)
+
+```
+
+La colonne **n** représente les effectifs, la colonne **%** représente les pourcentages, la colonne **%val** représente les pourcentages des valeurs valides calculées sans les données manquantes.
+**Freq** a plusieurs arguments pour personnaliser son affichage.
+On peut ajouter l'argument **total** qui permet d'afficher les totaux, on peut ajouter **sort** qui permet d'ordonner, on peut ajouter **valid** qui permet d'afficher ou pas les pourcentages de valeurs valides.
+Les autres arguments sont détaillés dans l'annexe.
+
+```{r}
+##TRI A PLAT AVEC LES PROPORTIONS
+freq(hdv2003$nivetud, valid= FALSE, total = TRUE, sort = "dec")
+```
+
+Comme dans le cas des variables quantitatives, on peut utiliser aussi la fonction `summary` pour faire le tri à plat.
+Dans ce cas, on aura les effectifs et une colonne **NA'S** qui représente les données manquantes.
+
+```{r}
+summary(hdv2003$qualif)
+```
+
+#### Vidéo récapitulative
+
+#### **Représentations graphiques**
+
+Pour représenter une variable qualitative, on peut recourir à différents types de graphiques tels que le diagramme en bâton (`barplot`), le diagramme en barre (`plot`) le diagramme de Cleveland (`dotchart`), le diagramme circulaire (`pie`).
+Ces fonctions ne s'appliquent pas directement sur la variable mais au tri à plat obtenu avec la fonction `table`**.** On peut aussi utiliser la fonction`sort` pour ordonner les valeurs pour une meilleure présentation des graphiques.
+
+```{r}
+##DIAGRAMME CIRCULAIRE
+pie(table(hdv2003$sexe))
+```
+
+```{r}
+##DIAGRAMME EN BARRE AVEC VARIABLE "IMPORTANCE DU TRAVAIL" ORDONNEE
+barplot(sort(table(hdv2003$trav.imp)))
+```
+
+```{r}
+##DIAGRAMME EN BATON AVEC VARIABLE "IMPORTANCE DU TRAVAIL" ORDONNEE
+plot(sort(table(hdv2003$trav.imp)))
+
+```
+
+```{r}
+##DIAGRAMME DE CLEVELAND AVEC VARIABLE "IMPORTANCE DU TRAVAIL" ORDONNEE
+dotchart(sort(as.matrix(table(hdv2003$trav.imp))[, 1]),pch = 19)
+
+```
+
+Il faut transformer le tri à plat en matrice pour respecter le fonctionnement de la fonction, d'où l'utilisation de **as.matrix**.
+On aura le même résultat si on ne l'utilise pas mais avec un message d'avertissement (**warning**).
+L'argument **pch** permet de spécifier le symbole à utiliser.
+Il peut prendre soit un nombre entier compris entre 0 et 25, soit un caractère textuel (voir ci-dessous).
+
+![](images/code.png)
+
+#### Exercice
+
+1.  On s'intéresse à l'importance accordée par les enquêtés à leur travail (variable `trav.imp` de la base de données `hdv2003`).
+    Faites un tri à plat des effectifs des modalités de cette variable avec la commande `table` Faites un tri à plat affichant les pourcentages de chaque modalité à deux chiffres aprés la virgule.
+    Y'a-t-il des valeurs manquantes ?
+
+    Représentez graphiquement les effectifs des modalités à l'aide d'un graphique en barres.\
+    Utilisez l'argument **col** de la fonction `barplot` pour modifier la couleur du graphique en tomato.
+
+Utilisez ce code pour importer la base: `data("hdv2003")`
+
+```{r tableex1, exercise = TRUE}
+    
+```
+
+## Analyse Bivariée
+
+L'analyse bivariée consiste à étudier deux variables en même temps pour voir si elles sont liées ou si l'une influence l'autre ou si elles sont indépendantes.
+
+### Croisement de deux variables qualitatives
+
+Pour étudier deux variables qualitatives, on fait généralement un tableau croisé.
+On peut utiliser la fonction `table` pour faire le tableau.
+
+```{r}
+##Tableau croisé de la variable importance du travail en fonction du sexe
+table(hdv2003$trav.imp, hdv2003$sexe)
+```
+
+En ligne, on a la variable importance du travail et en colonne le sexe.
+Donc on peut dire que 159 hommes ont dis que le travail est moins important que le reste.
+La meilleure interprétation est de passer par les pourcentages colonnes ou ligne.
+Pour ce faire, on utilise les fonctions `lprop` et `cprop` du package `questionr`.
+
+```{r}
+tab <-table(hdv2003$trav.imp, hdv2003$sexe)
+lprop(tab)
+```
+
+`lprop` permet de calculer les pourcentages lignes.
+Ainsi, on peut dire parmi ceux qui ont répondu que le travail est plus important, il 44,8% d'hommes et 55,2% de femmes.
+
+```{r}
+tab <-table(hdv2003$trav.imp, hdv2003$sexe)
+cprop(tab)
+```
+
+`cprop` permet de calculer les pourcentages colonnes.
+Ainsi, on peut dire parmi les hommes, il y'a 63,1% qui ont répondu que le travail est moins important que le reste.
+
+Les pourcentages totaux s'obtiennent avec la fonction `prop`.
+
+```{r}
+tab <-table(hdv2003$trav.imp, hdv2003$sexe)
+prop(tab)
+```
+
+On peut utiliser une autre fonction qui fait un peu le même travail que `table`.
+Il s'agit de la fonction `xtabs`.
+On utilisera le symbole **\~** pour indiquer la variable qu'il faut utiliser.
+S'il y'a plusieurs variables on les sépare par le symbole **+**.
+
+```{r}
+xtabs(~sexe, hdv2003)
+```
+
+```{r}
+xtabs(~trav.imp+sexe, hdv2003)
+```
+
+Pour calculer les pourcentages ligne, colonnes et totaux, on peut faire la même chose que `table` en utilisant les fonctions `cprop`, `lprop` et `prop` de la même manière.
+
+Avec `xtabs`, on peut faire un tableau de plus de deux variables.
+
+```{r}
+xtabs(~trav.imp+sexe+sport, hdv2003)
+```
+
+### Représentation graphique
+
+Pour représenter deux variables qualitatives, on peut utiliser un diagramme en mosaïque avec la fonction `mosaicplot`.
+
+Exécutez le code suivant du diagramme en mosaïque
+
+```{r mos, exercise = TRUE, exercise.eval = FALSE}
+mosaicplot(qualif ~ sexe, data = hdv2003, shade = TRUE, main = "Graphe en mosaïque")
+```
+
+La fonction `mosaicplot` comporte plusieurs arguments parmi lesquels l'argument **shade** qui nous permet produire des tracés en mosaïque étendue (si FALSE), ou un vecteur numérique d'au plus 5 nombres positifs distincts donnant les valeurs absolues des points de coupure pour les résidus (si TRUE).
+
+**Interprétation du graphique**
+
+Chaque rectangle correspond à une case du tableau où la largeur correspond au pourcentage des modalités en colonnes (il y'a beaucoup plus d'employés que de technicien de technicien) et la hauteur correspond aux proportions des colonnes (la proportion d'hommes chez les ouvriers qualifiés est supérieur à celle des cadres).
+la couleur de la case correspond au résidu du test de khi-deux correspondant.
+
+Pour avoir plus d'informations sur les fonctions (arguments, valeurs retournées), vous pouvez utiliser la fonction `help`.
+Executez ce code ci-dessous pour plus d'informations sur la fonction `mosaicplot`.
+
+```{r help, exercise = TRUE, exercise.eval = FALSE}
+help(mosaicplot)
+```
+
+### Croisement d'une variable quantitative et d'une variable qualitative {#croisement-dune-variable-quantitative-et-dune-variable-qualitative}
+
+Le croisement d'une variable quantitative et d'une variable qualitative permet de voir comment la variable quantitative est repartie suivant les modalités de la variable qualitatives.
+La boite à moustache (fonction `boxplot`) est généralement utilisée pour voir cette dispersion.
+Par exemple on peut visualiser la répartition des âges selon la fréquentation ou non du cinéma.
+
+Executez le code suivant pour générer la boite à moustache
+
+```{r box, exercise = TRUE, exercise.eval = FALSE}
+##CROISEMENT D'UNE VARIABLE QUALITATIVE ET D'UNE VARIABLE QUANTITATIVE
+boxplot(hdv2003$age ~ hdv2003$cinema)
+
+```
+
+L'interprétation d'un **boxplot** est la suivante : Les bords inférieurs et supérieurs du carré central représentent le premier et le troisième quartile de la variable représentée sur l'axe vertical.
+On a donc 50% de nos observations dans cet intervalle.
+Le trait horizontal dans le carré représente la médiane.
+Enfin, des "moustaches" s'étendent de chaque côté du carré, jusqu'aux valeurs minimales et maximales, avec une exception : si des valeurs sont éloignées du carré de plus de 1,5 fois l'écart interquartile (la hauteur du carré), alors on les représente sous forme de points (symbolisant des valeurs considérées comme "extrêmes").
+
+On remarque que ceux qui fréquentent le cinéma sont sensiblement plus jeunes que ceux qui ne le fréquentent pas.
+
+### Croisement de deux variables quantitatives
+
+L'étude de deux variables quantitatives se fait d'abord par une représentation graphique de type nuage de points pour voir le comportement de deux variables (tendance de corrélation ou pas).
+On peut utiliser la base de données **rp2012** qui comporte beaucoup plus de variables quantitatives.
+On peut ainsi représenter le pourcentage de cadres selon le pourcentage de diplômés du supérieur.
+
+Executez le code suivant:
+
+```{r plot, exercise=TRUE, exercise.eval = FALSE}
+data(rp2012)        ##Accés de la base de données rp2012
+##CROISEMENT DE DEUX VARIABLES QUANTITATIVES
+plot(rp2012$cadres, rp2012$dipl_sup)
+
+```
+
+D'après le graphique ci-dessus, on obtient une relation de dépendance claire entre le pourcentage des cadres et le pourcentage des diplômés du supérieur.
+On peut le tester numériquement en calculant le coefficient de corrélation qu'on verra dans la partie corrélation.
+
+**Corrélations et Test**
+
+1.  **Test de Khi-Deux**
+
+Si on veut tester l'hypothèse d'indépendance des lignes et des colonnes d'un tableau croisé de variables qualitatives, on peut utiliser le test d'indépendance de khi-deux.
+La fonction **chisq.test** appliqué au tableau croisé permet d'effectuer ce test.
+Testons l'hypothèse d'indépendance des deux variables « faire du sport » et « sexe ».
+
+```{r chisq, exercise = TRUE, exercise.eval = FALSE}
+##Test de Khi-deux
+tab<- table(hdv2003$sexe, hdv2003$sport)
+chisq.test(tab)
+
+```
+
+**X-squared**, la valeur de la statistique du Khi-deux pour notre tableau, c'est-à-dire une "distance" entre notre tableau observé et celui attendu si les deux variables étaient indépendantes.
+
+**df**, le nombre de degrés de libertés du test.
+
+**p-value**, indique la probabilité d'obtenir une valeur de la statistique du Khi-deux au moins aussi extrême sous l'hypothèse d'indépendance.
+
+Ici, le **p-value** est extrêmement faible (4.6e-05), est inférieur au seuil de décision généralement choisi (5% ou 0.05).
+On peut donc rejeter l'hypothèse d'indépendance des lignes et des colonnes du tableau.
+
+2.  **Corrélation linéaire (Pearson)**
+
+L'association linéaire entre deux variables quantitatives est mesurée par le coefficient de corrélation linéaire.
+Sa valeur varie entre -1 et 1.
+On parle d'une association linéaire négative parfaite si la valeur vaut 1 et d'une association linéaire positive parfaite si la valeur vaut 1.
+La valeur 0 indique une non association linéaire entre les deux variables.
+La fonction `cor` permet de calculer la corrélation.
+Ainsi, calculons la corrélation entre le pourcentage de cadres et celui de diplômés du supérieur :
+
+```{r cor, exercise = TRUE, exercise.eval = FALSE}
+##COEFFICIENT DE CORRELATION LINEAIRE
+cor(rp2012$cadres, rp2012$dipl_sup)
+
+```
+
+Le coefficient de corrélation est égal à **0,93**, proche de 1.
+Donc, on peut dire que les deux variables sont corrélées positivement.
+
+Calculons le coefficient de corrélation entre le pourcentage de propriétaire et le pourcentage de diplômés du supérieur :
+
+```{r cor2, exercise = TRUE, exercise.eval = FALSE}
+cor(rp2012$proprio, rp2012$dipl_sup)
+
+```
+
+Le coefficient de corrélation est très faible (0.05), donc on note une absence de liaison entre les deux variables.
+
+## Régression linéaire
+
+Quand on a une corrélation forte entre deux variables quantitatives, on peut penser à faire une régression linéaire, c'est-à-dire exprimer l'une en fonction de l'autre variable.
+
+La fonction `lm` est utilisée pour faire une régression linéaire simple.
+
+La proportion de cadres et la proportion des diplômés du supérieur sont fortement corrélées.
+Faisons la régression entre ces deux variables.
+
+```{r lm, exercise = TRUE, exercise.eval = FALSE}
+##REGRESSION LINEAIRE
+lm(rp2012$cadres ~ rp2012$dipl_sup)
+
+```
+
+Le symbole Tilde **\~** est utilisé pour séparer la variable d'intérêt et la variable explicative.
+Si on a plusieurs variables explicatives, on les sépare par le signe **+.**
+
+L'**Intercept** représente la constante du modèle, c'est-à-dire ici l'ordonnée à l'origine qui vaut **0.92**.
+
+Le coefficient associé à la variable explicative (dipl_sup) vaut **1.08.**
+
+Pour avoir des résultats plus détaillés, on peut stocker le résultat de la régression dans un objet et utiliser la fonction `summary`**.**
+
+```{r reg2, exercise = TRUE, exercise.eval = FALSE}
+reg <- lm(rp2012$cadres ~ rp2012$dipl_sup)
+summary(reg)
+
+```
+
+-   **Call** : la fomule du modèle ;
+
+-   **Residuals** : des statistiques descriptives des résidus ;
+
+-   **Coefficients** : un tableau à deux entrées où les lignes correspondent aux coefficients associés aux variables explicatives, et les colonnes, dans l'ordre, à l'estimation du coefficient, l'écart-type estimé, la valeur du test de Student de nullité statistique du coefficient et enfin la p-value associé à ce test, suivie d'un symbole pour lire rapidement la significativité ;
+
+-   **Signif. codes** : les significations des symboles de niveau de significativité ; 
+
+-   **Residual standard error** : estimation de l'écart-type de l'aléa et degré de liberté ;
+
+-   **Multiple R-squared** : coefficient de détermination ;
+
+-   **Adjusted R-squared** : coefficient de détermination ajusté ;
+
+-   **F-statistic** : valeur de la statistique de Fisher du test de significativité globale, ainsi que les degrés de liberté et la p-value associée au test.
+
+La variable **dipl_sup** est significative, le coefficient est significativement diffèrent de 0.
+On remarque que la part des diplômés du supérieur augmente avec la part des cadres.
+On peut représenter la droite de régression avec la fonction `abline`**.**
+
+```{r abline, exercise = TRUE, exercise.eval = FALSE}
+plot(rp2012$dipl_sup, rp2012$cadres)
+abline(reg, col="blue")
+
+```
+
+La fonction `reg` retourne plusieurs éléments qu'on peut accéder en utilisant le `reg` suivi du symbole \$.
+
+D'abord sortons tous les éléments retournés par reg.
+Pour ce faire, on utilise la fonction `names`**.**
+
+```{r names, exercise = TRUE, exercise.eval = FALSE}
+names(reg)
+
+```
+
+Les éléments les plus utilisés sont :
+
+-   **Coefficients** : un vecteur de coefficients ;
+
+-   **residuals** : les résidus ;
+
+-   **fitted.values** : les valeurs estimées ;
+
+-   **df.residual** : nombre de degrés de liberté.
+
+Ainsi, pour accéder aux coefficients, on utilise la commande suivante :
+
+```{r reg3, exercise = TRUE, exercise.eval = FALSE}
+reg$coefficients
+
+```
+
+## Régression logistique
+
+La régression logistique, également appelée modèle logit, est utilisée pour modéliser des variables de résultat dichotomiques.
+
+Soit ![Y](https://wikimedia.org/api/rest_v1/media/math/render/svg/961d67d6b454b4df2301ac571808a3538b3a6d3f) la variable à prédire (variable expliquée) et ![X=(X\_{1},X\_{2},...,X\_{J})](https://wikimedia.org/api/rest_v1/media/math/render/svg/c844dd2dcd703267272af525f2273cd7669aa24a) les variables prédictives (variables explicatives)
+.
+
+Dans le cadre de la régression logistique binaire, la variable ![Y](https://wikimedia.org/api/rest_v1/media/math/render/svg/961d67d6b454b4df2301ac571808a3538b3a6d3f) prend deux modalités possibles ![\\{1,0\\}](https://wikimedia.org/api/rest_v1/media/math/render/svg/e7b50787a7f3aa1194b32e036475129ea6ca6f0f)
+. Les variables ![X\_{j}](https://wikimedia.org/api/rest_v1/media/math/render/svg/ca3cb1ef7c9f25e85e1957e4eb58a72fa16a0066) sont exclusivement continues ou binaire
+s.
+
+La régression logistique est largement répandue dans de nombreux domaines.
+On peut citer de façon non exhaustive :
+
+-   En médecine, elle permet par exemple de trouver les facteurs qui caractérisent un groupe de sujets malades par rapport à des sujets sains.
+
+-   Dans le domaine des assurances, elle permet de cibler une fraction de la clientèle qui sera sensible à une police d'assurance sur tel ou tel risque particulier.
+
+-   Dans le domaine bancaire, pour détecter les groupes à risque lors de la souscription d'un crédit.
+
+-   En économétrie, pour expliquer une variable discrète.
+    Par exemple, les intentions de vote aux élections.
+
+**Exemple 1** .
+Supposons que nous nous intéressons aux facteurs qui influencent la victoire d'un candidat politique aux élections.
+La variable de résultat (réponse) est binaire (0/1); Gagner ou perdre.
+Les variables prédictives d'intérêt sont le montant d'argent dépensé pour la campagne, le temps passé à faire campagne négativement et si le candidat est ou non un titulaire.
+
+**Exemple 2** .
+Un chercheur s'intéresse à la façon dont les variables, telles que le GRE (scores aux examens d'études supérieures), la moyenne cumulative (moyenne pondérée cumulative) et le prestige de l'établissement de premier cycle, affectent l'admission aux études supérieures.
+La variable de réponse, admettre/ne pas admettre, est une variable binaire.
+
+Pour la pratique l'exemple 2 sera faite.
+D'abord importons les données et présentons les.
+
+```{r}
+mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+## Afficher les premieres observations
+head(mydata)
+```
+
+La base de données contient 4 variables:
+
+-   **admit**: variable binaire dont 1 représente admis à l'université et 0 non admis à l'université;
+
+-   **gre**: Scores aux examens d'études supérieures;
+
+-   **gpa**: La moyenne cumulative des notes;
+
+-   **rank**: Le prestige de l'établissement de premier cycle.
+
+La variable **rank** prend les valeurs 1 à 4.
+Les institutions ayant un **rank** de 1 ont le plus grand prestige, tandis que celles ayant un rang de 4 ont le plus faible.
+
+On peut faire une analyse descriptive rapide de la base en utilisant la fonction `summary`
+
+```{r}
+summary(mydata)
+
+```
+
+```{r}
+sapply(mydata, sd)
+
+```
+
+La moyenne des notes obtenues est égale à 3,39 avec un écart de 0,38.
+Alors que le score moyen aux examens d'études supérieures est égal à 587,7 avec un écart de 115,5.
+Les variables **gre** et **gpa** seront considérées comme des variable continues et la variable **rank** comme une variable qualitative.
+
+Ainsi, on peut faire un tri à plat de la variable à expliquer (**admit**) et l'une des variables explicatives (**rank**).
+
+```{r}
+tab<-table(mydata$rank, mydata$admit)
+cprop(tab)
+```
+
+L'analyse suivant la réputation montre que 26% des élèves acceptées proviennent d'une prestigieuse école (réputation de niveau 1) contre 42,5% qui sont issus d'une école de niveau de réputation 2.
+Parmi les non acceptés, 10,3% sont sortis dans de prestigieuses écoles, 35,5% dans des écoles de niveau de réputation 2.
+
+La fonction qui permet de faire la régression logistique dans R est `glm` du package `stats` en choisissant comme argument ***family="binomial".*** Le symbole ***\~*** séparela variable à expliquer (**admit**) et les variables explicatives et les variables explicatives sont séparées par le symbole **+.** La variable **rank** est transformé en facteur avant de la mettre dans le modèle.
+Exécutez le code suivant pour réaliser la régression logistique de la variable **admit** sur les variables **gpa, gre et rank.**
+
+```{r regL, exercise = TRUE, exercise.eval = FALSE}
+mydata$rank <- factor(mydata$rank)
+mylogit <- glm(admit ~ gre + gpa + rank, data = mydata, family = "binomial")
+summary(mylogit)
+```
+
+On utilise la fonction `summary` pour afficher les résultats détaillés de la régression logistique.
+Les variables ont significatives au moins au seuil de 5% (Pr(\>\|z\|)\<0,05).
+Les variables **gre** et **gpa** influencent positivement l'acceptation de l'élève à l'université.
+Par contre le niveau de prestige 2 influence négativement l'acceptation de l'élève à l'université, de même que le niveau de prestige 3 et 4.
+comparé au niveau de prestige 1.
+
+On peut calculer les exponentielles des coefficients pour avoir les odds-ratios.
+On extrait d'abord les coefficients avec la fonction `coef`, ensuite on calcule l'exponentiel avec la fonction `exp` comme suit:
+
+```{r}
+exp(coef(mylogit))
+```
+
+On peut aussi calculer les intervalles de confiance avec la fonction `confint` et mettre tout dans un tableau avec la fonction `cbind.`
+
+```{r message=FALSE, warning=FALSE}
+exp(cbind(OR = coef(mylogit), confint(mylogit)))
+```
+
+Avec le calcul des odds ratio, nous pouvons maintenant dire que pour une augmentation d'une unité de la moyenne des notes, les chances d'être admis dans une école d'études supérieures (par rapport à une non-admission) augmentent d'un facteur de 2,23.
+De même les chances d'être admis dans une école d'études supérieures (par rapport à une non-admission) sont 0,5 fois plus petites si on est issue d'un établissement de réputation 2 par rapport à un établissement de réputation 1.
+L'odds-ratio lié à la variable test est sensiblement égal à 1 alors l'effet est négligeable.
